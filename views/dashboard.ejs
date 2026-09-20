@@ -136,6 +136,46 @@
   </div>
 <% } %>
 
+<!-- Damaged or Lost Return Incidents (Shown if any exist) -->
+<% if (typeof damagedOrLostReturns !== 'undefined' && damagedOrLostReturns && damagedOrLostReturns.length > 0) { %>
+  <div class="table-card" style="border-left: 4px solid #f97316;">
+    <div class="table-header">
+      <h2>⚠️ Damaged / Lost Return Incidents (<%= damagedOrLostReturns.length %>)</h2>
+      <% if (user.role === 'admin' || user.role === 'lab_incharge') { %>
+        <a href="/maintenance" class="btn btn-outline btn-sm">Create Maintenance Record</a>
+      <% } %>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Tag</th>
+            <th>Returned By</th>
+            <th>Qty</th>
+            <th>Return Date</th>
+            <th>Reported Condition</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% damagedOrLostReturns.forEach(ret => { %>
+            <tr>
+              <td><strong><%= ret.asset ? ret.asset.name : 'Unknown' %></strong></td>
+              <td><code><%= ret.asset ? ret.asset.assetTag : '-' %></code></td>
+              <td><%= ret.requester ? ret.requester.name : 'Unknown' %></td>
+              <td><%= ret.quantity %></td>
+              <td><%= ret.returnedAt ? new Date(ret.returnedAt).toLocaleDateString() : '-' %></td>
+              <td>
+                <span class="badge badge-<%= ret.returnCondition.toLowerCase() %>"><%= ret.returnCondition %></span>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } %>
+
 <!-- Recent Activity / Requests -->
 <div class="table-card">
   <div class="table-header">

@@ -9,7 +9,7 @@ const { requireLogin, requireRole } = require('../middleware/auth');
 router.use(requireLogin);
 
 // GET: View all assets (accessible to admin and lab_incharge)
-router.get('/assets', async (req, res) => {
+router.get('/assets', requireRole('admin', 'lab_incharge'), async (req, res) => {
   try {
     const assets = await Asset.find().sort({ createdAt: -1 });
     res.render('assets', {
@@ -113,9 +113,22 @@ router.post('/assets/edit/:id', requireRole('admin'), async (req, res) => {
       return res.redirect('/assets?error=Asset+not+found');
     }
 
+    // Check if new assetTag conflicts with another existing asset
+    const duplicate = await Asset.findOne({
+      assetTag: assetTag.trim().toUpperCase(),
+      _id: { $ne: req.params.id }
+    });
+    if (duplicate) {
+      return res.redirect(`/assets?error=Asset+Tag+already+exists+on+another+item`);
+    }
+
     const newTotalQty = parseInt(quantity, 10);
-    const difference = newTotalQty - asset.quantity;
-    const newAvailableQty = Math.max(0, asset.availableQuantity + difference);
+    const currentlyIssued = asset.quantity - asset.availableQuantity;
+
+    // Prevent reducing total quantity below currently loaned out units
+    if (newTotalQty < currentlyIssued) {
+      return res.redirect(`/assets?error=Cannot+reduce+quantity+below+currently+issued+units+(${currentlyIssued})`);
+    }
 
     asset.assetTag = assetTag.trim().toUpperCase();
     asset.name = name.trim();
@@ -123,7 +136,7 @@ router.post('/assets/edit/:id', requireRole('admin'), async (req, res) => {
     asset.location = location.trim();
     asset.condition = condition || asset.condition;
     asset.quantity = newTotalQty;
-    asset.availableQuantity = newAvailableQty;
+    asset.availableQuantity = newTotalQty - currentlyIssued;
 
     await asset.save();
     res.redirect('/assets?success=Asset+updated+successfully');

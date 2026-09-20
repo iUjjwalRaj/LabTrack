@@ -19,6 +19,15 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
+  // Validate inputs
+  if (!email || !password) {
+    return res.render('login', {
+      title: 'Login',
+      error: 'Please enter both email and password.',
+      success: null
+    });
+  }
+
   try {
     // 1. Find user by email
     const user = await User.findOne({ email: email.toLowerCase().trim() });
@@ -74,6 +83,14 @@ router.get('/register', (req, res) => {
 // POST: Process Register
 router.post('/register', async (req, res) => {
   const { name, email, password, role } = req.body;
+
+  // Validate inputs
+  if (!name || !email || !password) {
+    return res.render('register', {
+      title: 'Register',
+      error: 'Please fill in all required fields.'
+    });
+  }
 
   try {
     // 1. Check if user already exists

@@ -21,9 +21,9 @@ router.get('/requests', async (req, res) => {
 
     const now = new Date();
 
-    // Mark overdue requests
+    // Mark overdue requests: current date > expectedReturnDate and status is not Returned
     const requestsWithOverdue = requests.map(r => {
-      const isOverdue = now > new Date(r.expectedReturnDate) && r.status === 'Issued';
+      const isOverdue = now > new Date(r.expectedReturnDate) && r.status !== 'Returned' && r.status !== 'Rejected';
       return {
         ...r.toObject(),
         isOverdue
@@ -55,6 +55,16 @@ router.post('/requests/:id/approve', async (req, res) => {
 
     if (request.status !== 'Pending') {
       return res.redirect('/requests?error=Only+Pending+requests+can+be+approved');
+    }
+
+    // CHECK: requested quantity <= available quantity
+    const asset = await Asset.findById(request.asset);
+    if (!asset) {
+      return res.redirect('/requests?error=Associated+asset+not+found');
+    }
+
+    if (request.quantity > asset.availableQuantity) {
+      return res.redirect(`/requests?error=Cannot+approve:+Requested+quantity+(${request.quantity})+exceeds+available+stock+(${asset.availableQuantity})`);
     }
 
     request.status = 'Approved';

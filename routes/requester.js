@@ -54,6 +54,15 @@ router.post('/request', async (req, res) => {
       return res.redirect('/equipment');
     }
 
+    if (!quantity || !purpose || !expectedReturnDate) {
+      return res.render('request-form', {
+        title: 'Request Equipment',
+        asset,
+        user: req.session.user,
+        error: 'Please fill in all required fields.'
+      });
+    }
+
     const requestedQty = parseInt(quantity, 10);
 
     // Validate requested quantity
@@ -104,9 +113,9 @@ router.get('/my-requests', async (req, res) => {
 
     const now = new Date();
 
-    // Attach simple isOverdue flag to each request
+    // Attach simple isOverdue flag to each request: current date > expectedReturnDate and status is not Returned
     const requestsWithOverdue = requests.map(r => {
-      const isOverdue = now > new Date(r.expectedReturnDate) && r.status === 'Issued';
+      const isOverdue = now > new Date(r.expectedReturnDate) && r.status !== 'Returned' && r.status !== 'Rejected';
       return {
         ...r.toObject(),
         isOverdue
