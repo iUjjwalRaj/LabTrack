@@ -84,11 +84,28 @@ router.get('/register', (req, res) => {
 router.post('/register', async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  // Validate inputs
+  // Validate required inputs
   if (!name || !email || !password) {
     return res.render('register', {
       title: 'Register',
       error: 'Please fill in all required fields.'
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    return res.render('register', {
+      title: 'Register',
+      error: 'Please enter a valid email address.'
+    });
+  }
+
+  // Validate password length (minimum 6 characters)
+  if (password.length < 6) {
+    return res.render('register', {
+      title: 'Register',
+      error: 'Password must be at least 6 characters long.'
     });
   }
 
@@ -102,7 +119,7 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // 2. Hash password
+    // 2. Hash password with bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 3. Create and save new user
@@ -119,12 +136,20 @@ router.post('/register', async (req, res) => {
     res.redirect('/login?registered=true');
   } catch (error) {
     console.error('Register error:', error);
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(e => e.message);
+      return res.render('register', {
+        title: 'Register',
+        error: messages.join(' ')
+      });
+    }
     res.render('register', {
       title: 'Register',
       error: 'Failed to create account. Please check your inputs.'
     });
   }
 });
+
 
 // GET: Logout
 router.get('/logout', (req, res) => {

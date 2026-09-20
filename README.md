@@ -97,11 +97,41 @@ Populate the database with pre-configured accounts, equipment, an overdue item, 
 npm run seed
 ```
 
-### 5. Start Server
+### 5. Start Server (Traditional Node.js)
 ```bash
 npm start
 ```
 Open **`http://localhost:3000`** in your browser.
+
+---
+
+## ☁️ Running on Cloudflare Workers (Local & Production)
+
+This project is fully adapted to run on **Cloudflare Workers** using the official `httpServerHandler` Express bridge, `nodejs_compat_v2`, and Ahead-Of-Time (AOT) precompiled EJS templates (disallowing dynamic eval for maximum edge performance and security).
+
+### 1. Local Worker Development
+Ensure you have a `.dev.vars` file created (do NOT commit secrets to Git):
+```bash
+cp .dev.vars.example .dev.vars
+```
+Then start the local Wrangler development server:
+```bash
+npm run dev:worker
+```
+Open **`http://localhost:8787`** in your browser.
+
+### 2. Production Deployment
+When you are ready to deploy to Cloudflare:
+
+1. Set your production secrets in Cloudflare (keep them out of Git!):
+   ```bash
+   npx wrangler secret put MONGODB_URI
+   npx wrangler secret put SESSION_SECRET
+   ```
+2. Deploy the Worker:
+   ```bash
+   npm run deploy
+   ```
 
 ---
 
@@ -114,3 +144,4 @@ The login page contains one-click auto-fill buttons for each role:
 | **Admin** | `admin@lab.com` | `admin123` |
 | **Lab In-charge** | `incharge@lab.com` | `incharge123` |
 | **Requester (Student)** | `student@lab.com` | `student123` |
+

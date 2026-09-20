@@ -1,0 +1,4 @@
+# Cloudflare Workers Local Development Environment Variables (.dev.vars)
+# For local development with: wrangler dev
+MONGODB_URI=mongodb://127.0.0.1:27017/lab_tracking
+SESSION_SECRET=your_secret_key_here
