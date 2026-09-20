@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+<div class="form-card">
+  <h2 style="margin-bottom: 20px; text-align: center;">Register Account</h2>
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <form action="/register" method="POST">
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" required placeholder="e.g. John Doe">
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" required placeholder="e.g. john@college.edu">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required minlength="4" placeholder="Minimum 4 characters">
+    </div>
+
+    <div class="form-group">
+      <label for="role">Select Role</label>
+      <select id="role" name="role" required>
+        <option value="requester">Requester (Student / Staff)</option>
+        <option value="lab_incharge">Lab In-charge</option>
+        <option value="admin">Admin</option>
+      </select>
+      <p class="help-text">Choose the role you want to demonstrate in the system.</p>
+    </div>
+
+    <div class="form-actions" style="justify-content: space-between; align-items: center;">
+      <a href="/login" style="font-size: 0.9rem; color: var(--primary); text-decoration: none;">Already registered? Sign In</a>
+      <button type="submit" class="btn btn-primary">Create Account</button>
+    </div>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

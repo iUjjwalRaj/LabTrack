@@ -1,0 +1,152 @@
+<%- include('partials/header') %>
+
+<div class="action-banner">
+  <div>
+    <h2><%= isStaffView ? 'Equipment Issue & Return Management' : 'My Equipment Requests' %></h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      <%= isStaffView ? 'Review requests, approve/reject, issue equipment, and record returns.' : 'Track the approval and issue status of your lab equipment requests.' %>
+    </p>
+  </div>
+  <% if (!isStaffView) { %>
+    <div>
+      <a href="/equipment" class="btn btn-primary">+ New Request</a>
+    </div>
+  <% } %>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<% if (success) { %>
+  <div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<% if (isStaffView) { %>
+  <!-- Filter Pills for Staff -->
+  <div class="filter-bar">
+    <a href="/requests" class="<%= !currentFilter || currentFilter === 'All' ? 'active' : '' %>">All Requests</a>
+    <a href="/requests?status=Pending" class="<%= currentFilter === 'Pending' ? 'active' : '' %>">Pending</a>
+    <a href="/requests?status=Approved" class="<%= currentFilter === 'Approved' ? 'active' : '' %>">Approved</a>
+    <a href="/requests?status=Issued" class="<%= currentFilter === 'Issued' ? 'active' : '' %>">Issued</a>
+    <a href="/requests?status=Returned" class="<%= currentFilter === 'Returned' ? 'active' : '' %>">Returned</a>
+    <a href="/requests?status=Rejected" class="<%= currentFilter === 'Rejected' ? 'active' : '' %>">Rejected</a>
+  </div>
+<% } %>
+
+<div class="table-card">
+  <div class="table-responsive">
+    <% if (requests && requests.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <% if (isStaffView) { %>
+              <th>Requester</th>
+            <% } %>
+            <th>Qty</th>
+            <th>Purpose</th>
+            <th>Expected Return</th>
+            <th>Status</th>
+            <% if (isStaffView) { %>
+              <th style="text-align: right;">Action</th>
+            <% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% requests.forEach(req => { %>
+            <tr>
+              <td>
+                <strong><%= req.asset ? req.asset.name : 'Unknown Asset' %></strong>
+                <% if (req.asset) { %>
+                  <br><small style="color: var(--text-muted);">Tag: <code><%= req.asset.assetTag %></code> | In Stock: <%= req.asset.availableQuantity %></small>
+                <% } %>
+              </td>
+
+              <% if (isStaffView) { %>
+                <td>
+                  <%= req.requester ? req.requester.name : 'Unknown' %>
+                  <br><small style="color: var(--text-muted);"><%= req.requester ? req.requester.email : '' %></small>
+                </td>
+              <% } %>
+
+              <td><strong><%= req.quantity %></strong></td>
+              <td><%= req.purpose %></td>
+
+              <td>
+                <%= new Date(req.expectedReturnDate).toLocaleDateString() %>
+                <% if (req.isOverdue) { %>
+                  <br><span class="badge badge-overdue">OVERDUE</span>
+                <% } %>
+              </td>
+
+              <td>
+                <span class="badge badge-<%= req.status.toLowerCase() %>"><%= req.status %></span>
+                <% if (req.returnCondition) { %>
+                  <br><span class="badge badge-<%= req.returnCondition.toLowerCase() %>">Condition: <%= req.returnCondition %></span>
+                <% } %>
+              </td>
+
+              <% if (isStaffView) { %>
+                <td style="text-align: right;">
+                  <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+                    
+                    <!-- PENDING ACTIONS -->
+                    <% if (req.status === 'Pending') { %>
+                      <form action="/requests/<%= req._id %>/approve" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--primary);">Approve</button>
+                      </form>
+
+                      <form action="/requests/<%= req._id %>/issue" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-primary btn-sm">Issue</button>
+                      </form>
+
+                      <form action="/requests/<%= req._id %>/reject" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                      </form>
+                    <% } %>
+
+                    <!-- APPROVED ACTIONS -->
+                    <% if (req.status === 'Approved') { %>
+                      <form action="/requests/<%= req._id %>/issue" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-primary btn-sm">Issue</button>
+                      </form>
+
+                      <form action="/requests/<%= req._id %>/reject" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                      </form>
+                    <% } %>
+
+                    <!-- ISSUED ACTIONS (RECORD RETURN) -->
+                    <% if (req.status === 'Issued') { %>
+                      <form action="/requests/<%= req._id %>/return" method="POST" class="return-form">
+                        <select name="returnCondition" title="Return Condition" required>
+                          <option value="OK">Condition: OK</option>
+                          <option value="Damaged">Condition: Damaged</option>
+                          <option value="Lost">Condition: Lost</option>
+                        </select>
+                        <button type="submit" class="btn btn-success btn-sm">Return</button>
+                      </form>
+                    <% } %>
+
+                    <!-- RETURNED / REJECTED STATUS DISPLAY -->
+                    <% if (req.status === 'Returned' || req.status === 'Rejected') { %>
+                      <span style="color: var(--text-muted); font-size: 0.8rem;">Completed</span>
+                    <% } %>
+
+                  </div>
+                </td>
+              <% } %>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <div style="padding: 32px; text-align: center; color: var(--text-muted);">
+        No equipment requests found.
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

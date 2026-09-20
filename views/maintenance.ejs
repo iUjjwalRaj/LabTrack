@@ -1,0 +1,113 @@
+<%- include('partials/header') %>
+
+<div class="action-banner">
+  <div>
+    <h2>Equipment Maintenance & Calibration Logs</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      Track repair history, servicing expenses, and upcoming service schedules.
+    </p>
+  </div>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<% if (success) { %>
+  <div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<!-- Add Maintenance Form -->
+<div class="form-card" style="max-width: 100%; margin-bottom: 30px;">
+  <h3 style="margin-bottom: 16px;">+ Record New Maintenance / Service</h3>
+  <form action="/maintenance" method="POST">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+      
+      <div class="form-group">
+        <label for="asset">Select Asset</label>
+        <select id="asset" name="asset" required>
+          <option value="">-- Choose Equipment --</option>
+          <% assets.forEach(a => { %>
+            <option value="<%= a._id %>"><%= a.name %> (<%= a.assetTag %>)</option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="serviceDate">Service Date</label>
+        <input type="date" id="serviceDate" name="serviceDate" required>
+      </div>
+
+      <div class="form-group">
+        <label for="cost">Service Cost ($ / ₹)</label>
+        <input type="number" id="cost" name="cost" required min="0" step="0.01" placeholder="e.g. 50">
+      </div>
+
+      <div class="form-group">
+        <label for="nextServiceDue">Next Service Due Date</label>
+        <input type="date" id="nextServiceDue" name="nextServiceDue" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Maintenance Notes / Actions Taken</label>
+      <input type="text" id="notes" name="notes" required placeholder="e.g. Recalibrated voltage probes and replaced fuse">
+    </div>
+
+    <div style="text-align: right; margin-top: 12px;">
+      <button type="submit" class="btn btn-primary">Save Maintenance Log</button>
+    </div>
+  </form>
+</div>
+
+<!-- Maintenance History Table -->
+<div class="table-card">
+  <div class="table-header">
+    <h2>Maintenance Service History</h2>
+  </div>
+  <div class="table-responsive">
+    <% if (logs && logs.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Asset Tag</th>
+            <th>Equipment Name</th>
+            <th>Service Date</th>
+            <th>Cost</th>
+            <th>Next Due Date</th>
+            <th>Notes & Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach(log => { %>
+            <tr>
+              <td><code><%= log.asset ? log.asset.assetTag : '-' %></code></td>
+              <td><strong><%= log.asset ? log.asset.name : 'Unknown Equipment' %></strong></td>
+              <td><%= new Date(log.serviceDate).toLocaleDateString() %></td>
+              <td>$<%= log.cost.toFixed(2) %></td>
+              <td>
+                <%= new Date(log.nextServiceDue).toLocaleDateString() %>
+                <% if (new Date() > new Date(log.nextServiceDue)) { %>
+                  <span class="badge badge-overdue" style="margin-left: 4px;">Service Due</span>
+                <% } %>
+              </td>
+              <td><%= log.notes %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <div style="padding: 28px; text-align: center; color: var(--text-muted);">
+        No maintenance logs recorded yet.
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Set default service date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('serviceDate').value = today;
+</script>
+
+<%- include('partials/footer') %>

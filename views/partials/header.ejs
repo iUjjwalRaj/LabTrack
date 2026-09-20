@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>Lab Equipment Tracking System</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <span>🔬 LabTrack</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <% if (currentUser) { %>
+            <li><a href="/dashboard">Dashboard</a></li>
+
+            <% if (currentUser.role === 'admin') { %>
+              <li><a href="/assets">Assets</a></li>
+              <li><a href="/assets/new">Add Asset</a></li>
+              <li><a href="/requests">Requests</a></li>
+              <li><a href="/maintenance">Maintenance</a></li>
+            <% } else if (currentUser.role === 'lab_incharge') { %>
+              <li><a href="/assets">Assets</a></li>
+              <li><a href="/requests">Requests</a></li>
+              <li><a href="/maintenance">Maintenance</a></li>
+            <% } else if (currentUser.role === 'requester') { %>
+              <li><a href="/equipment">Available Equipment</a></li>
+              <li><a href="/my-requests">My Requests</a></li>
+            <% } %>
+
+            <li class="user-badge">
+              <span><strong><%= currentUser.name %></strong></span>
+              <span class="role-pill role-<%= currentUser.role %>"><%= currentUser.role.replace('_', ' ') %></span>
+              <a href="/logout" class="btn btn-outline btn-sm" style="margin-left: 6px;">Logout</a>
+            </li>
+          <% } else { %>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/register">Register</a></li>
+          <% } %>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">

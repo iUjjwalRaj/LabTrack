@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+
+<div class="action-banner">
+  <div>
+    <h2>Available Equipment for Borrowing</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      Select the equipment you need for laboratory experiments or academic projects.
+    </p>
+  </div>
+  <div>
+    <a href="/my-requests" class="btn btn-outline">My Requests History</a>
+  </div>
+</div>
+
+<% if (assets && assets.length > 0) { %>
+  <div class="equipment-grid">
+    <% assets.forEach(item => { %>
+      <div class="equipment-card">
+        <div>
+          <span class="badge badge-ok" style="margin-bottom: 8px;">Available</span>
+          <h3><%= item.name %></h3>
+          <p class="meta">
+            Tag: <code><%= item.assetTag %></code><br>
+            Category: <%= item.category %><br>
+            Location: <%= item.location %>
+          </p>
+        </div>
+
+        <div>
+          <div class="stock-indicator">
+            <span>In Stock:</span>
+            <strong style="color: var(--success);"><%= item.availableQuantity %> units</strong>
+          </div>
+          <a href="/request/<%= item._id %>" class="btn btn-primary" style="width: 100%;">Request Equipment</a>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="form-card" style="text-align: center;">
+    <h3>No Equipment Currently Available</h3>
+    <p style="color: var(--text-muted); margin-top: 8px;">All equipment is either fully issued or under maintenance.</p>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

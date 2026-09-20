@@ -1,0 +1,94 @@
+<%- include('partials/header') %>
+
+<div class="form-card">
+  <h2 style="margin-bottom: 20px;"><%= isEdit ? 'Edit Asset' : 'Add New Lab Asset' %></h2>
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <form action="<%= action %>" method="POST">
+    <div class="form-group">
+      <label for="assetTag">Asset Tag / Serial ID</label>
+      <input 
+        type="text" 
+        id="assetTag" 
+        name="assetTag" 
+        required 
+        placeholder="e.g. LAB-EQ-001" 
+        value="<%= asset.assetTag || '' %>"
+      >
+      <p class="help-text">Unique barcode or serial identifier for lab tracking.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="name">Equipment Name</label>
+      <input 
+        type="text" 
+        id="name" 
+        name="name" 
+        required 
+        placeholder="e.g. Digital Storage Oscilloscope 100MHz" 
+        value="<%= asset.name || '' %>"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="category">Category</label>
+      <input 
+        type="text" 
+        id="category" 
+        name="category" 
+        required 
+        placeholder="e.g. Electronics, Computing, Mechanical" 
+        value="<%= asset.category || '' %>"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="location">Lab Location / Storage Shelf</label>
+      <input 
+        type="text" 
+        id="location" 
+        name="location" 
+        required 
+        placeholder="e.g. Lab 204, Rack C-3" 
+        value="<%= asset.location || '' %>"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="condition">Equipment Condition</label>
+      <select id="condition" name="condition" required>
+        <option value="OK" <%= asset.condition === 'OK' ? 'selected' : '' %>>OK (Good working condition)</option>
+        <option value="Damaged" <%= asset.condition === 'Damaged' ? 'selected' : '' %>>Damaged (Needs repair)</option>
+        <option value="Lost" <%= asset.condition === 'Lost' ? 'selected' : '' %>>Lost</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="quantity">Total Units</label>
+      <input 
+        type="number" 
+        id="quantity" 
+        name="quantity" 
+        required 
+        min="1" 
+        placeholder="e.g. 5" 
+        value="<%= asset.quantity || 1 %>"
+      >
+      <% if (isEdit) { %>
+        <p class="help-text">Currently available units: <strong><%= asset.availableQuantity %></strong></p>
+      <% } else { %>
+        <p class="help-text">Available quantity will be initialized to match this total.</p>
+      <% } %>
+    </div>
+
+    <div class="form-actions">
+      <a href="/assets" class="btn btn-outline">Cancel</a>
+      <button type="submit" class="btn btn-primary"><%= isEdit ? 'Save Changes' : 'Add Asset' %></button>
+    </div>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

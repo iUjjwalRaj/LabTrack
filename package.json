@@ -1,0 +1,21 @@
+{
+  "name": "lab-equipment-tracking-system",
+  "version": "1.0.0",
+  "description": "Lab Equipment & Asset Issue-Return Tracking System for College Project",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "seed": "node seed.js"
+  },
+  "keywords": ["college-project", "express", "mongoose", "lab-tracking"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "mongoose": "^8.9.5"
+  }
+}

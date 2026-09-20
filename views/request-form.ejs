@@ -1,0 +1,73 @@
+<%- include('partials/header') %>
+
+<div class="form-card">
+  <h2 style="margin-bottom: 8px;">Request Lab Equipment</h2>
+  <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+    Submit an issue request for approval by the Lab In-charge.
+  </p>
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 20px;">
+    <h4 style="margin-bottom: 4px;"><%= asset.name %></h4>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+      Tag: <code><%= asset.assetTag %></code> &bull; Location: <%= asset.location %> &bull; 
+      Available Stock: <strong style="color: var(--success);"><%= asset.availableQuantity %> units</strong>
+    </p>
+  </div>
+
+  <form action="/request" method="POST">
+    <input type="hidden" name="assetId" value="<%= asset._id %>">
+
+    <div class="form-group">
+      <label for="quantity">Quantity Required</label>
+      <input 
+        type="number" 
+        id="quantity" 
+        name="quantity" 
+        required 
+        min="1" 
+        max="<%= asset.availableQuantity %>" 
+        value="1"
+      >
+      <p class="help-text">Maximum available for this equipment: <%= asset.availableQuantity %></p>
+    </div>
+
+    <div class="form-group">
+      <label for="purpose">Purpose of Issue</label>
+      <textarea 
+        id="purpose" 
+        name="purpose" 
+        rows="3" 
+        required 
+        placeholder="e.g. Practical Lab experiment on Analog Electronics, Group 4"
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="expectedReturnDate">Expected Return Date</label>
+      <input 
+        type="date" 
+        id="expectedReturnDate" 
+        name="expectedReturnDate" 
+        required
+      >
+      <p class="help-text">Select the date by which you will return the equipment.</p>
+    </div>
+
+    <div class="form-actions">
+      <a href="/equipment" class="btn btn-outline">Cancel</a>
+      <button type="submit" class="btn btn-primary">Submit Request</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Set minimum date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('expectedReturnDate').setAttribute('min', today);
+</script>
+
+<%- include('partials/footer') %>

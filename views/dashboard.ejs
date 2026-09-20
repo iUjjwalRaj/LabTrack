@@ -1,0 +1,192 @@
+<%- include('partials/header') %>
+
+<!-- Welcome Greeting & Actions -->
+<div class="action-banner">
+  <div>
+    <h2>Welcome back, <%= user.name %>!</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      Role: <strong style="text-transform: capitalize;"><%= user.role.replace('_', ' ') %></strong> &bull;
+      Lab Asset Issue & Return Management Console
+    </p>
+  </div>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <% if (user.role === 'admin') { %>
+      <a href="/assets/new" class="btn btn-primary">+ Add Asset</a>
+      <a href="/requests" class="btn btn-outline">Review Requests</a>
+    <% } else if (user.role === 'lab_incharge') { %>
+      <a href="/requests?status=Pending" class="btn btn-primary">Pending Requests</a>
+      <a href="/requests?status=Issued" class="btn btn-outline">Issued Items</a>
+    <% } else if (user.role === 'requester') { %>
+      <a href="/equipment" class="btn btn-primary">Browse Available Equipment</a>
+      <a href="/my-requests" class="btn btn-outline">My Requests</a>
+    <% } %>
+  </div>
+</div>
+
+<!-- 5 Main Dashboard Metric Cards -->
+<div class="stats-grid">
+  <div class="stat-card primary-card">
+    <h3>Total Assets</h3>
+    <div class="stat-number"><%= stats.totalAssets %></div>
+    <small style="color: var(--text-muted);">Unique inventory items</small>
+  </div>
+
+  <div class="stat-card success-card">
+    <h3>Available Units</h3>
+    <div class="stat-number"><%= stats.totalAvailableUnits %></div>
+    <small style="color: var(--text-muted);">Units ready for issue</small>
+  </div>
+
+  <div class="stat-card warning-card">
+    <h3>Issued Units</h3>
+    <div class="stat-number"><%= stats.totalIssuedUnits %></div>
+    <small style="color: var(--text-muted);">Currently borrowed</small>
+  </div>
+
+  <div class="stat-card alert-card">
+    <h3>Overdue Returns</h3>
+    <div class="stat-number" style="color: var(--danger);"><%= stats.overdueCount %></div>
+    <small style="color: var(--danger);">Past expected return date</small>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #f97316;">
+    <h3>Damaged / Lost</h3>
+    <div class="stat-number" style="color: #ea580c;"><%= stats.damagedOrLostCount %></div>
+    <small style="color: var(--text-muted);">Items requiring attention</small>
+  </div>
+</div>
+
+<!-- Overdue Returns Section (Shown if any exist) -->
+<% if (overdueRequests && overdueRequests.length > 0) { %>
+  <div class="table-card" style="border-left: 4px solid var(--danger);">
+    <div class="table-header" style="background-color: #fef2f2;">
+      <h2 style="color: var(--danger);">⚠️ Overdue Equipment Returns (<%= overdueRequests.length %>)</h2>
+      <% if (user.role !== 'requester') { %>
+        <a href="/requests?status=Issued" class="btn btn-danger btn-sm">Process Returns</a>
+      <% } %>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Tag</th>
+            <th>Borrower</th>
+            <th>Qty</th>
+            <th>Issued Date</th>
+            <th>Expected Return</th>
+            <th>Overdue Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% overdueRequests.forEach(req => { %>
+            <tr>
+              <td><strong><%= req.asset ? req.asset.name : 'Unknown' %></strong></td>
+              <td><code><%= req.asset ? req.asset.assetTag : '-' %></code></td>
+              <td><%= req.requester ? req.requester.name : 'Unknown' %> (<%= req.requester ? req.requester.email : '' %>)</td>
+              <td><%= req.quantity %></td>
+              <td><%= req.issuedAt ? new Date(req.issuedAt).toLocaleDateString() : '-' %></td>
+              <td style="color: var(--danger); font-weight: 600;"><%= new Date(req.expectedReturnDate).toLocaleDateString() %></td>
+              <td><span class="badge badge-overdue">OVERDUE</span></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } %>
+
+<!-- Damaged or Lost Assets Notice (Shown if any exist) -->
+<% if (damagedOrLostAssets && damagedOrLostAssets.length > 0) { %>
+  <div class="table-card" style="border-left: 4px solid #f97316;">
+    <div class="table-header">
+      <h2>🛠️ Damaged / Lost Assets (<%= damagedOrLostAssets.length %>)</h2>
+      <% if (user.role === 'admin' || user.role === 'lab_incharge') { %>
+        <a href="/maintenance" class="btn btn-outline btn-sm">Maintenance Log</a>
+      <% } %>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Tag</th>
+            <th>Asset Name</th>
+            <th>Category</th>
+            <th>Location</th>
+            <th>Condition</th>
+            <th>Available / Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% damagedOrLostAssets.forEach(item => { %>
+            <tr>
+              <td><code><%= item.assetTag %></code></td>
+              <td><strong><%= item.name %></strong></td>
+              <td><%= item.category %></td>
+              <td><%= item.location %></td>
+              <td>
+                <span class="badge badge-<%= item.condition.toLowerCase() %>"><%= item.condition %></span>
+              </td>
+              <td><%= item.availableQuantity %> / <%= item.quantity %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } %>
+
+<!-- Recent Activity / Requests -->
+<div class="table-card">
+  <div class="table-header">
+    <h2><%= user.role === 'requester' ? 'My Recent Requests' : 'Recent Lab Requests' %></h2>
+    <% if (user.role === 'requester') { %>
+      <a href="/my-requests" class="btn btn-outline btn-sm">View All My Requests</a>
+    <% } else { %>
+      <a href="/requests" class="btn btn-outline btn-sm">View All Requests</a>
+    <% } %>
+  </div>
+  <div class="table-responsive">
+    <% if (recentRequests && recentRequests.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <% if (user.role !== 'requester') { %>
+              <th>Requester</th>
+            <% } %>
+            <th>Qty</th>
+            <th>Purpose</th>
+            <th>Expected Return</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentRequests.forEach(r => { %>
+            <tr>
+              <td><strong><%= r.asset ? r.asset.name : 'Unknown' %></strong></td>
+              <% if (user.role !== 'requester') { %>
+                <td><%= r.requester ? r.requester.name : 'Unknown' %></td>
+              <% } %>
+              <td><%= r.quantity %></td>
+              <td><%= r.purpose %></td>
+              <td><%= new Date(r.expectedReturnDate).toLocaleDateString() %></td>
+              <td>
+                <span class="badge badge-<%= r.status.toLowerCase() %>"><%= r.status %></span>
+                <% if (r.returnCondition && r.returnCondition !== 'OK') { %>
+                  <span class="badge badge-<%= r.returnCondition.toLowerCase() %>">(<%= r.returnCondition %>)</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+        No recent requests recorded yet.
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
